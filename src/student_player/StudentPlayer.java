@@ -1,8 +1,9 @@
 package student_player;
 
-import boardgame.Move;
-import tablut.TablutBoardState;
-import tablut.TablutPlayer;
+import coordinates.*;
+import tablut.*;
+
+import java.util.*;
 
 /** A player file submitted by a student. */
 public class StudentPlayer extends TablutPlayer {
@@ -13,7 +14,7 @@ public class StudentPlayer extends TablutPlayer {
      * associate you with your agent. The constructor should do nothing else.
      */
     public StudentPlayer() {
-        super("xxxxxxxxx");
+        super("260671847");
     }
 
     /**
@@ -21,15 +22,17 @@ public class StudentPlayer extends TablutPlayer {
      * object contains the current state of the game, which your agent must use to
      * make decisions.
      */
-    public Move chooseMove(TablutBoardState boardState) {
+    public TablutMove chooseMove(TablutBoardState boardState) {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
-        MyTools.getSomething();
+        ArrayList<TablutMove> moves = boardState.getAllLegalMoves();
+        TablutMove myMove = moves.get((int)(Math.random()*moves.size()));
 
-        // Is random the best you can do?
-        Move myMove = boardState.getRandomMove();
+        // Decision logic for Swedes
 
+        myMove = MyTools.minimaxDecision(boardState, 3);
+        // Decision logic for Muscovites
         // Return your move to be processed by the server.
         return myMove;
     }
