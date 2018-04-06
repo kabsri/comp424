@@ -28,12 +28,16 @@ public class StudentPlayer extends TablutPlayer {
         // strategies...
         ArrayList<TablutMove> moves = boardState.getAllLegalMoves();
         TablutMove myMove = moves.get((int)(Math.random()*moves.size()));
-
-        // Decision logic for Swedes
-
-        myMove = MyTools.minimaxDecision(boardState, 3);
-        // Decision logic for Muscovites
+        int depth=3;
+        int numPieces = boardState.getNumberPlayerPieces(TablutBoardState.MUSCOVITE) + boardState.getNumberPlayerPieces(TablutBoardState.SWEDE);
+        if (numPieces<=9){
+            depth = 3;
+        } else if (numPieces<=18){
+            depth = 3;
+        }
+        myMove = MyTools.minimaxDecision(boardState, depth);
         // Return your move to be processed by the server.
+       // System.out.println(MyTools.kingMoves(boardState));
         return myMove;
     }
 }

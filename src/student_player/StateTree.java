@@ -24,10 +24,10 @@ public class StateTree {
     }
 
     public void expand(){
-        for (TablutMove move: state.getAllLegalMoves()){
+        for (TablutMove move : state.getAllLegalMoves()) {
             TablutBoardState cbs = (TablutBoardState) state.clone();
             cbs.processMove(move);
-            children.add(new StateTree(cbs, move, depth+1));
+            children.add(new StateTree(cbs, move, depth + 1));
         }
     }
 

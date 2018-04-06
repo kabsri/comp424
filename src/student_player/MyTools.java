@@ -7,20 +7,44 @@ import java.util.*;
 
 public class MyTools {
 
+    public static int[][] weights =
+            {
+            {1000,5   ,100 ,100 ,100 ,100 ,100 ,5  ,1000},
+            {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5  },
+            {100 ,40  ,20  ,20  ,20  ,20  ,20  ,40 ,100 },
+            {100 ,40  ,20  ,10  ,10  ,10  ,20  ,40 ,100 },
+            {100 ,40  ,20  ,10  ,0   ,10  ,20  ,40 ,100 },
+            {100 ,40  ,20  ,10  ,10  ,10  ,20  ,40 ,100 },
+            {100 ,40  ,20  ,20  ,20  ,20  ,20  ,40 ,100 },
+            {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5  },
+            {1000,5   ,100 ,100 ,100 ,100 ,100 ,5  ,1000}
+            };
+
     public static double getSomething() {
         return Math.random();
     }
+
+//    public static TablutMove forwardPrune(TablutBoardState state, int maxDepth, int k){
+//        TablutMove[] bestK = new TablutMove[k];
+//        int bestKThreshold;
+//        int bestKIndex;
+//        ArrayList<TablutMove> moves = state.getAllLegalMoves();
+//        for ()
+//        StateTree tree = new StateTree(state);
+//
+//    }
 
     public static TablutMove minimaxDecision(TablutBoardState state, int maxDepth){
         StateTree tree = new StateTree(state);
         tree.expand();
         ArrayList<StateTree> children = tree.getChildren();
-        double bestValue = objectiveValueSwedes(children.get(0).getState());
-        TablutMove minimaxMove = children.get(0).getPrevMove();
+        int r = (int)(Math.random()*children.size());
+        int bestValue = evalFunction(children.get(r).getState());
+        TablutMove minimaxMove = children.get(r).getPrevMove();
         //Take minimal move if Swedes
         if (state.getTurnPlayer() == TablutBoardState.SWEDE) {
             for (StateTree child : children) {
-                double val = minimaxValue(child, maxDepth);
+                int val = abMin(child, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
                 if (val < bestValue) {
                     bestValue = val;
                     minimaxMove = child.getPrevMove();
@@ -31,27 +55,27 @@ public class MyTools {
         }
         //Take maximal move if Muscovites
         for (StateTree child : children) {
-            double val = minimaxValue(child, maxDepth);
+            int val = abMax(child, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
             if (val > bestValue) {
                 bestValue = val;
                 minimaxMove = child.getPrevMove();
             }
         }
-        System.out.println(bestValue);
+        //System.out.println(bestValue);
         return minimaxMove;
     }
 
-    public static double minimaxValue(StateTree s, int maxDepth){
+    public static int minimaxValue(StateTree s, int maxDepth){
         if (s.getDepth() >= maxDepth){
-            return objectiveValueSwedes(s.getState());
+            return evalFunction(s.getState());
         }
         s.expand();
         ArrayList<StateTree> children = s.getChildren();
-        double bestValue = objectiveValueSwedes(children.get(0).getState());
+        int bestValue = evalFunction(children.get(0).getState());
         //If Swede's turn then take minimum value
         if (s.getState().getTurnPlayer() == TablutBoardState.SWEDE) {
             for (StateTree child : children) {
-                double m = minimaxValue(child, maxDepth);
+                int m = minimaxValue(child, maxDepth);
                 if (m < bestValue) {
                     bestValue = m;
                 }
@@ -60,7 +84,7 @@ public class MyTools {
         }
         //If Muscovite's turn then take maximum value
         for (StateTree child : children) {
-            double m = minimaxValue(child, maxDepth);
+            int m = minimaxValue(child, maxDepth);
             if (m > bestValue) {
                 bestValue = m;
             }
@@ -68,27 +92,111 @@ public class MyTools {
         return bestValue;
     }
 
-    public static double objectiveValueSwedes(TablutBoardState bs){
-        int winner = bs.getWinner();
-        if (winner == TablutBoardState.SWEDE) {
-            return -1;
-        }else if (winner == TablutBoardState.MUSCOVITE){
-            return 100;
-        } else if (kingOnEdge(bs)){
-            return 0;
+    public static int abMax(StateTree s, int maxDepth, int alpha, int beta){
+        if (s.getDepth() >= maxDepth){
+            return evalFunction(s.getState());
         }
-        int musc = bs.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
-        return musc+1;
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        for (StateTree child: children){
+            alpha = Math.max(alpha, abMin(child, maxDepth, alpha, beta));
+            if (alpha >= beta){
+                return beta;
+            }
+        }
+        return alpha;
     }
 
+    public static int abMin(StateTree s, int maxDepth, int alpha, int beta){
+        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
+            return evalFunction(s.getState());
+        }
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        for (StateTree child: children){
+            beta = Math.min(beta, abMax(child, maxDepth, alpha, beta));
+            if (alpha >= beta){
+                return alpha;
+            }
+        }
+        return beta;
+    }
 
-    public static boolean kingOnEdge(TablutBoardState bs){
+    // Evaluate the state of the board, Swedes want to minimize and muscovites want to maximize
+    public static int evalFunction(TablutBoardState bs){
+        int winner = bs.getWinner();
+        if (winner == TablutBoardState.SWEDE) {
+            return -100000;
+        }else if (winner == TablutBoardState.MUSCOVITE){
+            return 100000;
+        }
+        int musc = bs.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
+        int swed = bs.getNumberPlayerPieces(TablutBoardState.SWEDE);
         Coord king = bs.getKingPosition();
-        return king.x==0 || king.y==0 || king.x==8 || king.y==8;
+        return 5*musc + 40*kingDanger(bs) - 10*swed - 5*kingMoves(bs) - 5*weights[king.x][king.y];
+    }
+
+    // return whether the king is on the edge of the board or not
+    public static int kingOnEdge(TablutBoardState bs){
+        Coord king = bs.getKingPosition();
+        if(king.x==0 || king.y==0 || king.x==8 || king.y==8){
+            return 1;
+        }
+        return 0;
+    }
+
+    // return the number of moves the king has in the board state
+    public static int kingMoves(TablutBoardState bs){
+        TablutBoardState s = (TablutBoardState) bs.clone();
+        Coord king = bs.getKingPosition();
+        int up=0,right=0,down=0,left=0;
+        for (int i=king.x-1; i>0; i--){
+            if (bs.coordIsEmpty(Coordinates.get(i, king.y))){
+                up++;
+            } else {
+                break;
+            }
+        }
+        for (int i=king.x+1; i<9; i++){
+            if (bs.coordIsEmpty(Coordinates.get(i, king.y))){
+                down++;
+            } else {
+                break;
+            }
+        }
+        for (int j=king.x-1; j>0; j--){
+            if (bs.coordIsEmpty(Coordinates.get(king.x, j))){
+                left++;
+            } else {
+                break;
+            }
+        }
+        for (int j=king.x+1; j<9; j++){
+            if (bs.coordIsEmpty(Coordinates.get(king.x, j))){
+                up++;
+            } else {
+                break;
+            }
+        }
+        return up+down+left+right;
+
+    }
+
+    //return number of muscovites that neighbour king
+    public static int kingDanger(TablutBoardState bs){
+        int n = 0;
+        Coord king = bs.getKingPosition();
+        List<Coord> neighbours = Coordinates.getNeighbors(king);
+        for (Coord c: neighbours){
+            if (bs.getPieceAt(c)== TablutBoardState.Piece.BLACK){
+                n++;
+            }
+        }
+        return n;
     }
 
     public static boolean kingOnClearEdge(TablutBoardState bs){
-        if (!kingOnEdge(bs)){
+        if (kingOnEdge(bs)==0){
             return false;
         }
         Coord king = bs.getKingPosition();

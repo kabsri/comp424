@@ -164,3 +164,45 @@
 169,RandomPlayer,xxxxxxxxx,0,RandomPlayer,15,game00169.log,
 170,xxxxxxxxx,RandomPlayer,0,xxxxxxxxx,15,game00170.log,
 171,RandomPlayer,xxxxxxxxx,0,RandomPlayer,15,game00171.log,
+1,Human,260671847,0,Human,10,game00001.log,
+2,GreedyPlayer,260671847,0,GreedyPlayer,1,game00002.log,TIMEOUT
+3,GreedyPlayer,260671847,0,GreedyPlayer,1,game00003.log,TIMEOUT
+4,260671847,Human,1,Human,1,game00004.log,TIMEOUT
+5,Human,260671847,0,Human,11,game00005.log,
+6,GreedyPlayer,260671847,0,GreedyPlayer,1,game00006.log,TIMEOUT
+7,Human,260671847,GAMEOVER USER CANCEL UNDECIDED,NOBODY,7,game00007.log,USER CANCEL
+8,Human,260671847,0,Human,12,game00008.log,
+9,Human,260671847,0,Human,6,game00009.log,
+10,Human,260671847,0,Human,8,game00010.log,
+11,Human,260671847,0,Human,4,game00011.log,
+12,Human,260671847,GAMEOVER USER CANCEL UNDECIDED,NOBODY,2,game00012.log,USER CANCEL
+13,Human,Human,GAMEOVER USER CANCEL UNDECIDED,NOBODY,2,game00013.log,USER CANCEL
+15,Human,260671847,0,Human,4,game00015.log,
+16,Human,260671847,0,Human,4,game00016.log,
+17,Human,260671847,1,260671847,16,game00017.log,
+18,RandomPlayer,260671847,0,RandomPlayer,2,game00018.log,TIMEOUT
+19,GreedyPlayer,260671847,0,GreedyPlayer,11,game00019.log,
+20,RandomPlayer,260671847,1,260671847,18,game00020.log,
+21,260671847,RandomPlayer,1,RandomPlayer,4,game00021.log,TIMEOUT
+22,RandomPlayer,260671847,1,260671847,5,game00022.log,
+23,260671847,RandomPlayer,1,RandomPlayer,0,game00023.log,TIMEOUT
+24,RandomPlayer,260671847,0,RandomPlayer,3,game00024.log,TIMEOUT
+25,RandomPlayer,260671847,1,260671847,5,game00025.log,
+26,260671847,RandomPlayer,0,260671847,19,game00026.log,
+27,GreedyPlayer,260671847,0,GreedyPlayer,2,game00027.log,TIMEOUT
+28,RandomPlayer,260671847,1,260671847,5,game00028.log,
+29,260671847,RandomPlayer,0,260671847,7,game00029.log,
+30,GreedyPlayer,260671847,0,GreedyPlayer,3,game00030.log,
+31,RandomPlayer,260671847,0,RandomPlayer,1,game00031.log,TIMEOUT
+32,Human,260671847,0,Human,8,game00032.log,
+33,Human,260671847,0,Human,8,game00033.log,TIMEOUT
+34,Human,260671847,0,Human,9,game00034.log,TIMEOUT
+35,RandomPlayer,260671847,0,RandomPlayer,5,game00035.log,TIMEOUT
+36,RandomPlayer,260671847,1,260671847,10,game00036.log,
+37,RandomPlayer,260671847,1,260671847,17,game00037.log,
+38,260671847,RandomPlayer,1,RandomPlayer,10,game00038.log,TIMEOUT
+39,RandomPlayer,260671847,1,260671847,6,game00039.log,
+40,260671847,RandomPlayer,0,260671847,9,game00040.log,
+41,GreedyPlayer,260671847,0,GreedyPlayer,12,game00041.log,
+42,Human,Human,GAMEOVER USER CANCEL UNDECIDED,NOBODY,3,game00042.log,USER CANCEL
+43,260671847,260671847,0,260671847,4,game00043.log,
