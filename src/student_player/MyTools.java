@@ -41,7 +41,7 @@ public class MyTools {
         int musc = bs.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
         int swed = bs.getNumberPlayerPieces(TablutBoardState.SWEDE);
         Coord king = bs.getKingPosition();
-        return 5*musc + 60*kingDanger(bs) - 8*swed - 5*kingMoves(bs) - 5*kingPosWeights[king.x][king.y] + ((int)(Math.random()*11)-5);
+        return 5*musc + 40*kingDanger(bs) - 8*swed - 5*kingMoves(bs) - 5*kingPosWeights[king.x][king.y] + ((int)(Math.random()*11)-5);
     }
 
     ///////////////////////////
@@ -132,7 +132,6 @@ public class MyTools {
             return evaluate(s.getState());
         }
         if (timeOut || System.nanoTime()-start>threshold){
-            System.out.println("Time!");
             timeOut = true;
             s.setValue(beta);
             return beta;
@@ -158,7 +157,6 @@ public class MyTools {
             return evaluate(s.getState());
         }
         if (timeOut || System.nanoTime()-start>threshold){
-            System.out.println("Time!");
             timeOut = true;
             s.setValue(alpha);
             return alpha;
