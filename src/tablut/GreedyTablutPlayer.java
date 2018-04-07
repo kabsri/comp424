@@ -7,6 +7,7 @@ import boardgame.Move;
 import boardgame.Player;
 import coordinates.Coord;
 import coordinates.Coordinates;
+import student_player.StudentPlayer;
 
 public class GreedyTablutPlayer extends TablutPlayer {
     private Random rand = new Random(1848);
@@ -21,6 +22,7 @@ public class GreedyTablutPlayer extends TablutPlayer {
 
     @Override
     public Move chooseMove(TablutBoardState bs) {
+        rand = new Random();
         List<TablutMove> options = bs.getAllLegalMoves();
 
         // Set an initial move as some random one.
@@ -98,18 +100,26 @@ public class GreedyTablutPlayer extends TablutPlayer {
     // For Debugging purposes only.
     public static void main(String[] args) {
         TablutBoardState b = new TablutBoardState();
+
         Player swede = new GreedyTablutPlayer("GreedySwede");
         swede.setColor(TablutBoardState.SWEDE);
+        ((GreedyTablutPlayer) swede).rand = new Random();
 
-        // Player swede = new RandomTablutPlayer("RandomSwede");
-        // swede.setColor(TablutBoardState.SWEDE);
-        //
-        Player muscovite = new GreedyTablutPlayer("GreedyMuscovite");
+//        Player swede = new RandomTablutPlayer("RandomSwede");
+//        swede.setColor(TablutBoardState.SWEDE);
+
+//        Player swede = new StudentPlayer();
+//        swede.setColor(TablutBoardState.SWEDE);
+
+//        Player muscovite = new GreedyTablutPlayer("GreedyMuscovite");
+//        muscovite.setColor(TablutBoardState.MUSCOVITE);
+//        ((GreedyTablutPlayer) muscovite).rand = new Random();
+
+//        Player muscovite = new RandomTablutPlayer("RandomMuscovite");
+//        muscovite.setColor(TablutBoardState.MUSCOVITE);
+
+        Player muscovite = new StudentPlayer();
         muscovite.setColor(TablutBoardState.MUSCOVITE);
-        ((GreedyTablutPlayer) muscovite).rand = new Random(4);
-
-        // Player muscovite = new RandomTablutPlayer("RandomMuscovite");
-        // muscovite.setColor(TablutBoardState.MUSCOVITE);
 
         Player player = muscovite;
         while (!b.gameOver()) {

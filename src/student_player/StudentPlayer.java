@@ -27,12 +27,17 @@ public class StudentPlayer extends TablutPlayer {
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
         ArrayList<TablutMove> moves = boardState.getAllLegalMoves();
-        TablutMove myMove = moves.get((int)(Math.random()*moves.size()));
+        for (TablutMove move : moves){
+            TablutBoardState cbs = (TablutBoardState) boardState.clone();
+            cbs.processMove(move);
+            if (cbs.getWinner()==cbs.getOpponent()){
+                return move;
+            }
+        }
         int depth=3;
-        myMove = MyTools.abPrune(boardState, depth);
+        TablutMove myMove = MyTools.abPrune(boardState, depth);
         //myMove = MyTools.forwardPruneMin(boardState, depth, 10);
         // Return your move to be processed by the server.
-       // System.out.println(MyTools.kingMoves(boardState));
         return myMove;
     }
 }
