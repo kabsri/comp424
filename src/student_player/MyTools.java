@@ -11,15 +11,20 @@ public class MyTools {
     public static int[][] kingPosWeights =
             {
             {1000,5   ,100 ,100 ,100 ,100 ,100 ,5  ,1000},
-            {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5  },
+            {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5   },
             {100 ,40  ,20  ,20  ,20  ,20  ,20  ,40 ,100 },
             {100 ,40  ,20  ,10  ,10  ,10  ,20  ,40 ,100 },
             {100 ,40  ,20  ,10  ,0   ,10  ,20  ,40 ,100 },
             {100 ,40  ,20  ,10  ,10  ,10  ,20  ,40 ,100 },
             {100 ,40  ,20  ,20  ,20  ,20  ,20  ,40 ,100 },
-            {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5  },
+            {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5   },
             {1000,5   ,100 ,100 ,100 ,100 ,100 ,5  ,1000}
             };
+
+    //time threshold to cut off search
+    public static long threshold = 1500000000;
+
+    public static boolean timeOut = false;
 
     public static double getSomething() {
         return Math.random();
@@ -89,6 +94,82 @@ public class MyTools {
         ArrayList<StateTree> children = s.getChildren();
         for (StateTree child: children){
             alpha = Math.max(alpha, abMin(child, maxDepth, alpha, beta));
+            if (alpha >= beta){
+                s.setValue(beta);
+                return beta;
+            }
+        }
+        s.setValue(alpha);
+        return alpha;
+    }
+
+    ///////////////////////////////////////////
+    //alpha beta pruning with a time cutoff
+    //////////////////////////////////////////
+    public static TablutMove abPruneTimeCut(TablutBoardState state, int maxDepth, long start){
+        StateTree tree = new StateTree(state);
+        if (state.getTurnPlayer()==TablutBoardState.SWEDE){
+            int bestValue = abMinTimeCut(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, start);
+            ArrayList<StateTree> children = tree.getChildren();
+            for (StateTree child : children){
+                if (child.getValue()==bestValue){
+                    return child.getPrevMove();
+                }
+            }
+        }
+        int bestValue = abMaxTimeCut(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE, start);
+        ArrayList<StateTree> children = tree.getChildren();
+        for (StateTree child : children){
+            if (child.getValue()==bestValue){
+                return child.getPrevMove();
+            }
+        }
+        return state.getAllLegalMoves().get(0);
+    }
+
+    public static int abMinTimeCut(StateTree s, int maxDepth, int alpha, int beta, long start){
+        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
+            return evaluate(s.getState());
+        }
+        if (timeOut || System.nanoTime()-start>threshold){
+            System.out.println("Time!");
+            timeOut = true;
+            s.setValue(beta);
+            return beta;
+        }
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        for (StateTree child: children){
+            beta = Math.min(beta, abMaxTimeCut(child, maxDepth, alpha, beta, start));
+            if (timeOut){
+                break;
+            }
+            if (alpha >= beta){
+                s.setValue(alpha);
+                return alpha;
+            }
+        }
+        s.setValue(beta);
+        return beta;
+    }
+
+    public static int abMaxTimeCut(StateTree s, int maxDepth, int alpha, int beta, long start){
+        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
+            return evaluate(s.getState());
+        }
+        if (timeOut || System.nanoTime()-start>threshold){
+            System.out.println("Time!");
+            timeOut = true;
+            s.setValue(alpha);
+            return alpha;
+        }
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        for (StateTree child: children){
+            alpha = Math.max(alpha, abMinTimeCut(child, maxDepth, alpha, beta, start));
+            if (timeOut){
+                break;
+            }
             if (alpha >= beta){
                 s.setValue(beta);
                 return beta;
