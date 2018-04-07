@@ -459,6 +459,7 @@ public class TablutBoardState extends BoardState {
     @Override
     public Move getRandomMove() {
         ArrayList<TablutMove> moves = getAllLegalMoves();
+        rand = new Random();
         return moves.get(rand.nextInt(moves.size()));
     }
 

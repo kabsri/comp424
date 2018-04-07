@@ -7,7 +7,8 @@ import java.util.*;
 
 public class MyTools {
 
-    public static int[][] weights =
+    //rating of how good each tile is for the king to be on
+    public static int[][] kingPosWeights =
             {
             {1000,5   ,100 ,100 ,100 ,100 ,100 ,5  ,1000},
             {5   ,5   ,40  ,40  ,40  ,40  ,40  ,5  ,5  },
@@ -24,6 +25,141 @@ public class MyTools {
         return Math.random();
     }
 
+    // Evaluate the state of the board, Swedes want to minimize and muscovites want to maximize
+    public static int evaluate(TablutBoardState bs){
+        int winner = bs.getWinner();
+        if (winner == TablutBoardState.SWEDE) {
+            return -100000;
+        }else if (winner == TablutBoardState.MUSCOVITE){
+            return 100000;
+        }
+        int musc = bs.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
+        int swed = bs.getNumberPlayerPieces(TablutBoardState.SWEDE);
+        Coord king = bs.getKingPosition();
+        return 5*musc + 40*kingDanger(bs) - 10*swed - 5*kingMoves(bs) - 5*kingPosWeights[king.x][king.y];
+    }
+
+    ///////////////////////////
+    //alpha-beta pruning
+    ///////////////////////////
+    public static TablutMove abPrune(TablutBoardState state, int maxDepth){
+        StateTree tree = new StateTree(state);
+        if (state.getTurnPlayer()==TablutBoardState.SWEDE){
+            int bestValue = abMin(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            ArrayList<StateTree> children = tree.getChildren();
+            for (StateTree child : children){
+                if (child.getValue()==bestValue){
+                    return child.getPrevMove();
+                }
+            }
+        }
+        int bestValue = abMax(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        ArrayList<StateTree> children = tree.getChildren();
+        for (StateTree child : children){
+            if (child.getValue()==bestValue){
+                return child.getPrevMove();
+            }
+        }
+        return state.getAllLegalMoves().get(0);
+
+    }
+
+    public static int abMin(StateTree s, int maxDepth, int alpha, int beta){
+        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
+            return evaluate(s.getState());
+        }
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        for (StateTree child: children){
+            beta = Math.min(beta, abMax(child, maxDepth, alpha, beta));
+            if (alpha >= beta){
+                s.setValue(alpha);
+                return alpha;
+            }
+        }
+        s.setValue(beta);
+        return beta;
+    }
+
+    public static int abMax(StateTree s, int maxDepth, int alpha, int beta){
+        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
+            return evaluate(s.getState());
+        }
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        for (StateTree child: children){
+            alpha = Math.max(alpha, abMin(child, maxDepth, alpha, beta));
+            if (alpha >= beta){
+                s.setValue(beta);
+                return beta;
+            }
+        }
+        s.setValue(alpha);
+        return alpha;
+    }
+
+    /////////////////////////
+    // minimax
+    /////////////////////////
+    public static TablutMove minimaxDecision(TablutBoardState state, int maxDepth){
+        StateTree tree = new StateTree(state);
+        tree.expand();
+        ArrayList<StateTree> children = tree.getChildren();
+        int r = (int)(Math.random()*children.size());
+        int bestValue = evaluate(children.get(r).getState());
+        TablutMove minimaxMove = children.get(r).getPrevMove();
+        //Take minimal move if Swedes
+        if (state.getTurnPlayer() == TablutBoardState.SWEDE) {
+            for (StateTree child : children) {
+                int val = minimaxValue(child, maxDepth);
+                if (val < bestValue) {
+                    bestValue = val;
+                    minimaxMove = child.getPrevMove();
+                }
+            }
+            System.out.println(bestValue);
+            return minimaxMove;
+        }
+        //Take maximal move if Muscovites
+        for (StateTree child : children) {
+            int val = minimaxValue(child, maxDepth);
+            if (val > bestValue) {
+                bestValue = val;
+                minimaxMove = child.getPrevMove();
+            }
+        }
+        //System.out.println(bestValue);
+        return minimaxMove;
+    }
+
+    public static int minimaxValue(StateTree s, int maxDepth){
+        if (s.getDepth() >= maxDepth){
+            return evaluate(s.getState());
+        }
+        s.expand();
+        ArrayList<StateTree> children = s.getChildren();
+        int bestValue = evaluate(children.get(0).getState());
+        //If Swede's turn then take minimum value
+        if (s.getState().getTurnPlayer() == TablutBoardState.SWEDE) {
+            for (StateTree child : children) {
+                int m = minimaxValue(child, maxDepth);
+                if (m < bestValue) {
+                    bestValue = m;
+                }
+            }
+            return bestValue;
+        }
+        //If Muscovite's turn then take maximum value
+        for (StateTree child : children) {
+            int m = minimaxValue(child, maxDepth);
+            if (m > bestValue) {
+                bestValue = m;
+            }
+        }
+        return bestValue;
+    }
+
+    //forward pruning implementation that doesn't work
     public static TablutMove forwardPruneMin(TablutBoardState state, int maxDepth, int k){
         ArrayList<TablutMove> moves = state.getAllLegalMoves();
         TablutMove[] bestKMoves = new TablutMove[k];
@@ -35,7 +171,7 @@ public class MyTools {
             TablutBoardState cbs = (TablutBoardState) state.clone();
             TablutMove move = moves.get(i);
             cbs.processMove(move);
-            int e = evalFunction(cbs);
+            int e = evaluate(cbs);
             if (i==0){
                 bestKMoves[i] = move;
                 bestKStates[i] = new StateTree(cbs);
@@ -77,136 +213,6 @@ public class MyTools {
         }
         return bestMove;
 
-    }
-
-    public static TablutMove abPrune(TablutBoardState state, int maxDepth){
-        StateTree tree = new StateTree(state);
-        if (state.getTurnPlayer()==TablutBoardState.SWEDE){
-            int bestValue = abMin(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            System.out.println(bestValue);
-            ArrayList<StateTree> children = tree.getChildren();
-            for (StateTree child : children){
-                if (child.getValue()==bestValue){
-                    return child.getPrevMove();
-                }
-            }
-        }
-        int bestValue = abMax(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        System.out.println(bestValue);
-        ArrayList<StateTree> children = tree.getChildren();
-        for (StateTree child : children){
-            if (child.getValue()==bestValue){
-                return child.getPrevMove();
-            }
-        }
-        return state.getAllLegalMoves().get(0);
-
-    }
-
-    public static TablutMove minimaxDecision(TablutBoardState state, int maxDepth){
-        StateTree tree = new StateTree(state);
-        tree.expand();
-        ArrayList<StateTree> children = tree.getChildren();
-        int r = (int)(Math.random()*children.size());
-        int bestValue = evalFunction(children.get(r).getState());
-        TablutMove minimaxMove = children.get(r).getPrevMove();
-        //Take minimal move if Swedes
-        if (state.getTurnPlayer() == TablutBoardState.SWEDE) {
-            for (StateTree child : children) {
-                int val = abMin(child, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-                if (val < bestValue) {
-                    bestValue = val;
-                    minimaxMove = child.getPrevMove();
-                }
-            }
-            System.out.println(bestValue);
-            return minimaxMove;
-        }
-        //Take maximal move if Muscovites
-        for (StateTree child : children) {
-            int val = abMax(child, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            if (val > bestValue) {
-                bestValue = val;
-                minimaxMove = child.getPrevMove();
-            }
-        }
-        //System.out.println(bestValue);
-        return minimaxMove;
-    }
-
-    public static int minimaxValue(StateTree s, int maxDepth){
-        if (s.getDepth() >= maxDepth){
-            return evalFunction(s.getState());
-        }
-        s.expand();
-        ArrayList<StateTree> children = s.getChildren();
-        int bestValue = evalFunction(children.get(0).getState());
-        //If Swede's turn then take minimum value
-        if (s.getState().getTurnPlayer() == TablutBoardState.SWEDE) {
-            for (StateTree child : children) {
-                int m = minimaxValue(child, maxDepth);
-                if (m < bestValue) {
-                    bestValue = m;
-                }
-            }
-            return bestValue;
-        }
-        //If Muscovite's turn then take maximum value
-        for (StateTree child : children) {
-            int m = minimaxValue(child, maxDepth);
-            if (m > bestValue) {
-                bestValue = m;
-            }
-        }
-        return bestValue;
-    }
-
-    public static int abMax(StateTree s, int maxDepth, int alpha, int beta){
-        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
-            return evalFunction(s.getState());
-        }
-        s.expand();
-        ArrayList<StateTree> children = s.getChildren();
-        for (StateTree child: children){
-            alpha = Math.max(alpha, abMin(child, maxDepth, alpha, beta));
-            if (alpha >= beta){
-                s.setValue(beta);
-                return beta;
-            }
-        }
-        s.setValue(alpha);
-        return alpha;
-    }
-
-    public static int abMin(StateTree s, int maxDepth, int alpha, int beta){
-        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
-            return evalFunction(s.getState());
-        }
-        s.expand();
-        ArrayList<StateTree> children = s.getChildren();
-        for (StateTree child: children){
-            beta = Math.min(beta, abMax(child, maxDepth, alpha, beta));
-            if (alpha >= beta){
-                s.setValue(alpha);
-                return alpha;
-            }
-        }
-        s.setValue(beta);
-        return beta;
-    }
-
-    // Evaluate the state of the board, Swedes want to minimize and muscovites want to maximize
-    public static int evalFunction(TablutBoardState bs){
-        int winner = bs.getWinner();
-        if (winner == TablutBoardState.SWEDE) {
-            return -100000;
-        }else if (winner == TablutBoardState.MUSCOVITE){
-            return 100000;
-        }
-        int musc = bs.getNumberPlayerPieces(TablutBoardState.MUSCOVITE);
-        int swed = bs.getNumberPlayerPieces(TablutBoardState.SWEDE);
-        Coord king = bs.getKingPosition();
-        return 5*musc + 40*kingDanger(bs) - 10*swed - 5*kingMoves(bs) - 5*weights[king.x][king.y];
     }
 
     // return whether the king is on the edge of the board or not
@@ -266,24 +272,6 @@ public class MyTools {
             }
         }
         return n;
-    }
-
-    public static boolean kingOnClearEdge(TablutBoardState bs){
-        if (kingOnEdge(bs)==0){
-            return false;
-        }
-        Coord king = bs.getKingPosition();
-        if (king.x==0){
-
-        } else if (king.x==8){
-
-        } else if (king.y == 0) {
-
-        } else {
-
-        }
-        return true;
-
     }
 
 }

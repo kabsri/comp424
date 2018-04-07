@@ -26,17 +26,30 @@ public class StudentPlayer extends TablutPlayer {
         // You probably will make separate functions in MyTools.
         // For example, maybe you'll need to load some pre-processed best opening
         // strategies...
+
         ArrayList<TablutMove> moves = boardState.getAllLegalMoves();
+        int numMoves = moves.size();
+        int numMovesOpp = 0;
+        //First loop through all possible moves to see if there exists a winning one
         for (TablutMove move : moves){
             TablutBoardState cbs = (TablutBoardState) boardState.clone();
             cbs.processMove(move);
+            if (numMovesOpp == 0){
+                numMovesOpp = cbs.getAllLegalMoves().size();
+            }
             if (cbs.getWinner()==cbs.getOpponent()){
                 return move;
             }
         }
-        int depth=3;
+        //Want to search 3 moves ahead, but if we suspect branching factor to be too high then only do two moves
+        int branchEstimate = numMoves + numMoves*numMovesOpp;
+        int depth = 3;
+        if (branchEstimate>4500) {
+            depth = 2;
+        }
+        System.out.println(numMoves+" "+numMovesOpp+" "+(numMoves+numMoves*numMovesOpp));
+        //alpha-beta pruning
         TablutMove myMove = MyTools.abPrune(boardState, depth);
-        //myMove = MyTools.forwardPruneMin(boardState, depth, 10);
         // Return your move to be processed by the server.
         return myMove;
     }
