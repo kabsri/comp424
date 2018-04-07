@@ -50,14 +50,14 @@ public class StudentPlayer extends TablutPlayer {
         }
         //alpha-beta pruning
         //TablutMove myMove = MyTools.abPrune(boardState, depth);
-        if (boardState.getTurnNumber()<=1){
+        if (boardState.getTurnNumber()>=0){
             TablutMove myMove = MyTools.abPrune(boardState, depth);
-            System.out.println(System.nanoTime()-start+" "+branchEstimate);
+            System.out.println(System.nanoTime()-start+" "+branchEstimate+" sup");
             return myMove;
         }
         MyTools.timeOut = false;
         TablutMove myMove = MyTools.abPruneTimeCut(boardState, depth, start);
-        System.out.println(System.nanoTime()-start+" "+branchEstimate);
+        System.out.println(System.nanoTime()-start+" "+branchEstimate+" sup");
         // Return your move to be processed by the server.
         return myMove;
     }
