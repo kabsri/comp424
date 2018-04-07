@@ -45,7 +45,7 @@ public class StudentPlayer extends TablutPlayer {
         //Want to search 3 moves ahead, but if we suspect branching factor to be too high then only do two moves
         int branchEstimate = numMoves + numMoves*numMovesOpp + numMoves*numMovesOpp+numMoves;
         int depth = 3;
-        if (branchEstimate>10000) {
+        if (branchEstimate>9000) {
             depth = 2;
         }
         //alpha-beta pruning
