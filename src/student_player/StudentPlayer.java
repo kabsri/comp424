@@ -29,13 +29,8 @@ public class StudentPlayer extends TablutPlayer {
         ArrayList<TablutMove> moves = boardState.getAllLegalMoves();
         TablutMove myMove = moves.get((int)(Math.random()*moves.size()));
         int depth=3;
-        int numPieces = boardState.getNumberPlayerPieces(TablutBoardState.MUSCOVITE) + boardState.getNumberPlayerPieces(TablutBoardState.SWEDE);
-        if (numPieces<=9){
-            depth = 3;
-        } else if (numPieces<=18){
-            depth = 3;
-        }
-        myMove = MyTools.minimaxDecision(boardState, depth);
+        myMove = MyTools.abPrune(boardState, depth);
+        //myMove = MyTools.forwardPruneMin(boardState, depth, 10);
         // Return your move to be processed by the server.
        // System.out.println(MyTools.kingMoves(boardState));
         return myMove;

@@ -24,15 +24,84 @@ public class MyTools {
         return Math.random();
     }
 
-//    public static TablutMove forwardPrune(TablutBoardState state, int maxDepth, int k){
-//        TablutMove[] bestK = new TablutMove[k];
-//        int bestKThreshold;
-//        int bestKIndex;
-//        ArrayList<TablutMove> moves = state.getAllLegalMoves();
-//        for ()
-//        StateTree tree = new StateTree(state);
-//
-//    }
+    public static TablutMove forwardPruneMin(TablutBoardState state, int maxDepth, int k){
+        ArrayList<TablutMove> moves = state.getAllLegalMoves();
+        TablutMove[] bestKMoves = new TablutMove[k];
+        StateTree[] bestKStates = new StateTree[k];
+        int[] bestKes = new int[k];
+        int bestKThreshold=Integer.MAX_VALUE;
+        int bestKIndex=0;
+        for (int i=0; i<moves.size(); i++){
+            TablutBoardState cbs = (TablutBoardState) state.clone();
+            TablutMove move = moves.get(i);
+            cbs.processMove(move);
+            int e = evalFunction(cbs);
+            if (i==0){
+                bestKMoves[i] = move;
+                bestKStates[i] = new StateTree(cbs);
+                bestKes[i] = e;
+                bestKThreshold = e;
+                bestKIndex = i;
+            }else if (i<k){
+                bestKMoves[i] = move;
+                if (e>bestKThreshold){
+                    bestKMoves[i] = move;
+                    bestKStates[i] = new StateTree(cbs);
+                    bestKes[i] = e;
+                    bestKThreshold = e;
+                    bestKIndex = i;
+                }
+            } else {
+                if (e<bestKThreshold){
+                    bestKMoves[bestKIndex] = move;
+                    bestKStates[bestKIndex] = new StateTree(cbs);
+                    bestKes[bestKIndex] = e;
+                    bestKThreshold = bestKes[0];
+                    bestKIndex = 0;
+                    for (int j=0; j<k; j++){
+                        if (bestKes[j]<bestKThreshold){
+                            bestKThreshold = bestKes[j];
+                            bestKIndex=j;
+                        }
+                    }
+                }
+            }
+        }
+        TablutMove bestMove = bestKMoves[0];
+        int bestVal = Integer.MAX_VALUE;
+        for (int i=0; i<k; i++){
+            int val = abMin(bestKStates[i], maxDepth-1, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            if (val<bestVal){
+                bestMove = bestKMoves[i];
+            }
+        }
+        return bestMove;
+
+    }
+
+    public static TablutMove abPrune(TablutBoardState state, int maxDepth){
+        StateTree tree = new StateTree(state);
+        if (state.getTurnPlayer()==TablutBoardState.SWEDE){
+            int bestValue = abMin(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            System.out.println(bestValue);
+            ArrayList<StateTree> children = tree.getChildren();
+            for (StateTree child : children){
+                if (child.getValue()==bestValue){
+                    return child.getPrevMove();
+                }
+            }
+        }
+        int bestValue = abMax(tree, maxDepth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        System.out.println(bestValue);
+        ArrayList<StateTree> children = tree.getChildren();
+        for (StateTree child : children){
+            if (child.getValue()==bestValue){
+                return child.getPrevMove();
+            }
+        }
+        return state.getAllLegalMoves().get(0);
+
+    }
 
     public static TablutMove minimaxDecision(TablutBoardState state, int maxDepth){
         StateTree tree = new StateTree(state);
@@ -93,7 +162,7 @@ public class MyTools {
     }
 
     public static int abMax(StateTree s, int maxDepth, int alpha, int beta){
-        if (s.getDepth() >= maxDepth){
+        if (s.getDepth() >= maxDepth || s.getState().gameOver()){
             return evalFunction(s.getState());
         }
         s.expand();
@@ -101,9 +170,11 @@ public class MyTools {
         for (StateTree child: children){
             alpha = Math.max(alpha, abMin(child, maxDepth, alpha, beta));
             if (alpha >= beta){
+                s.setValue(beta);
                 return beta;
             }
         }
+        s.setValue(alpha);
         return alpha;
     }
 
@@ -116,9 +187,11 @@ public class MyTools {
         for (StateTree child: children){
             beta = Math.min(beta, abMax(child, maxDepth, alpha, beta));
             if (alpha >= beta){
+                s.setValue(alpha);
                 return alpha;
             }
         }
+        s.setValue(beta);
         return beta;
     }
 

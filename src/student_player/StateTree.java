@@ -11,6 +11,7 @@ public class StateTree {
     private TablutBoardState state;
     private TablutMove prevMove;
     private int depth;
+    private int value;
 
     public StateTree(TablutBoardState root){
         this(root, null, 0);
@@ -24,10 +25,12 @@ public class StateTree {
     }
 
     public void expand(){
-        for (TablutMove move : state.getAllLegalMoves()) {
-            TablutBoardState cbs = (TablutBoardState) state.clone();
-            cbs.processMove(move);
-            children.add(new StateTree(cbs, move, depth + 1));
+        if (children.isEmpty()) {
+            for (TablutMove move : state.getAllLegalMoves()) {
+                TablutBoardState cbs = (TablutBoardState) state.clone();
+                cbs.processMove(move);
+                children.add(new StateTree(cbs, move, depth + 1));
+            }
         }
     }
 
@@ -40,6 +43,10 @@ public class StateTree {
                 child.expand(depth-1);
             }
         }
+    }
+
+    public void setValue(int val){
+        value = val;
     }
 
     public TablutBoardState getState(){
@@ -56,5 +63,9 @@ public class StateTree {
 
     public int getDepth(){
         return depth;
+    }
+
+    public int getValue(){
+        return value;
     }
 }
