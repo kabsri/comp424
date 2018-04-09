@@ -132,6 +132,7 @@ public class MyTools {
             return evaluate(s.getState());
         }
         if (timeOut || System.nanoTime()-start>threshold){
+            System.out.println("Time!");
             timeOut = true;
             s.setValue(beta);
             return beta;
@@ -157,6 +158,7 @@ public class MyTools {
             return evaluate(s.getState());
         }
         if (timeOut || System.nanoTime()-start>threshold){
+            System.out.println("Time!");
             timeOut = true;
             s.setValue(alpha);
             return alpha;

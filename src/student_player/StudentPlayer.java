@@ -43,17 +43,19 @@ public class StudentPlayer extends TablutPlayer {
             }
         }
         //Want to search 3 moves ahead, but if we suspect branching factor to be too high then only do two moves
-        int branchEstimate = numMoves + numMoves*numMovesOpp + numMoves*numMovesOpp+numMoves;
+        int branchEstimate = numMoves + numMoves*numMovesOpp + numMoves*numMovesOpp*numMoves;
+        System.out.println(branchEstimate);
+        System.out.println("sup");
         int depth = 3;
-        if (branchEstimate>7400) {
-            depth = 2;
-        }
-        //alpha-beta pruning
-        //TablutMove myMove = MyTools.abPrune(boardState, depth);
         if (boardState.getTurnNumber()<=1){
             TablutMove myMove = MyTools.abPrune(boardState, depth);
             return myMove;
         }
+        if (branchEstimate>35000) {
+            depth = 2;
+        }
+        //alpha-beta pruning
+        //TablutMove myMove = MyTools.abPrune(boardState, depth);
         MyTools.timeOut = false;
         TablutMove myMove = MyTools.abPruneTimeCut(boardState, depth, start);
         // Return your move to be processed by the server.
